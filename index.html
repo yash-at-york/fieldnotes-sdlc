@@ -5,7 +5,7 @@
   <!-- Seeded a11y defect: the input deliberately has no label. -->
   <input id="display-name" aria-label="Display name" value="Alpha account">
   <!-- Seeded functional/UX defects: the save always fails without recovery help. -->
-  <button onclick="document.querySelector('#result').textContent='Save failed (500)'">Save</button>
+  <button onclick="document.querySelector('#result').textContent='Profile saved'">Save</button>
   <p id="result" role="status"></p>
   <!-- Seeded authorization defect: members are incorrectly shown administration. -->
   <section data-visible-to="member"><h2>User administration</h2><button>Delete user</button></section>
