@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Tenant profile sample</title></head>
+<body>
+  <h1>Tenant profile</h1>
+  <!-- Seeded a11y defect: the input deliberately has no label. -->
+  <input id="display-name" aria-label="Display name" value="Alpha account">
+  <!-- Seeded functional/UX defects: the save always fails without recovery help. -->
+  <button onclick="document.querySelector('#result').textContent='Save failed (500)'">Save</button>
+  <p id="result" role="status"></p>
+  <!-- Seeded authorization defect: members are incorrectly shown administration. -->
+  <section data-visible-to="member"><h2>User administration</h2><button>Delete user</button></section>
+  <!-- Seeded isolation defect: a beta record is rendered into alpha's page. -->
+  <output data-session-tenant="alpha" data-record-tenant="beta">Beta billing@example.test</output>
+</body></html>
