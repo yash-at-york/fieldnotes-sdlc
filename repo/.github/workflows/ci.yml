@@ -1,0 +1,24 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  accessible-name:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check display-name accessible name
+        run: |
+          python - <<'PY'
+          import pathlib
+          html = pathlib.Path("index.html").read_text()
+          ok = (
+              'aria-label="Display name"' in html
+              or 'aria-labelledby=' in html
+              or ('for="display-name"' in html and '<label' in html)
+          )
+          print("accessible-name: " + ("present" if ok else "absent"))
+          raise SystemExit(0 if ok else 1)
+          PY

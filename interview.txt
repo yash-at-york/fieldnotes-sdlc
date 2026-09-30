@@ -1,0 +1,47 @@
+# Structured planning interview — Fieldnotes "tenant profile" slice
+
+Interviewer: Daniel Okafor (planning lead). Interviewee: Priya Raman (product owner).
+Transcribed 2026-09-30. This transcript is the opted-in P1 intake source; each
+requirement below is cited against an exact span in this file.
+
+---
+
+Daniel: Let's scope the tenant profile change. What is the single outcome the
+customer is waiting for?
+
+Priya: Workspaces keep asking for a profile page their admin can actually
+maintain. The core requirement is simple. The account owner can save the tenant profile.
+
+Daniel: Who is allowed to perform that save?
+
+Priya: That is the part we keep getting wrong. A manager runs the day-to-day
+work of a workspace, but the account owner is the person who holds the billing
+and security responsibility for it. A manager must not be treated as that owner.
+Only the account owner may save the profile.
+
+Daniel: So saving is owner-only. What about administration of users generally?
+
+Priya: Members cannot administer users. That is a hard boundary — adding,
+removing, or changing roles is an owner or explicitly-delegated-manager action,
+never a plain member action.
+
+Daniel: This is a multi-tenant product. What is the isolation guarantee we are
+willing to state in a test?
+
+Priya: Tenant data is isolated so an alpha session cannot read a beta record.
+If a session in one workspace can ever read another workspace's participant
+data, that is a release-blocking security defect, not a nice-to-have.
+
+Daniel: And the profile form itself — anything the accessibility review will
+hold us to?
+
+Priya: Yes. The name field has an accessible name. Screen-reader users must get
+a programmatically associated label on that field; a bare input is a failure.
+
+Daniel: Anything we are explicitly deferring?
+
+Priya: Workspace self-serve billing and custom role definitions. Out of scope
+for this slice; they will reopen their own requirements later.
+
+Daniel: Understood. I'll turn this into a cited slice with a decision card on
+"account owner", and both of us will sign it before it moves to engineering.
