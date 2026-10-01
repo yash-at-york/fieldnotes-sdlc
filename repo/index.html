@@ -2,13 +2,104 @@
 <html lang="en"><head><meta charset="utf-8"><title>Tenant profile sample</title></head>
 <body>
   <h1>Tenant profile</h1>
-  <!-- Seeded a11y defect: the input deliberately has no label. -->
-  <input id="display-name" value="Alpha account">
-  <!-- Seeded functional/UX defects: the save always fails without recovery help. -->
-  <button onclick="document.querySelector('#result').textContent='Save failed (500)'">Save</button>
+
+  <form id="profile-form">
+    <label for="display-name">Display name</label>
+    <input id="display-name" name="display-name" value="Alpha account">
+    <button type="submit" data-action="save-profile">Save</button>
+  </form>
   <p id="result" role="status"></p>
-  <!-- Seeded authorization defect: members are incorrectly shown administration. -->
-  <section data-visible-to="member"><h2>User administration</h2><button>Delete user</button></section>
-  <!-- Seeded isolation defect: a beta record is rendered into alpha's page. -->
-  <output data-session-tenant="alpha" data-record-tenant="beta">Beta billing@example.test</output>
+
+  <!-- User administration is owner (or explicitly-delegated manager) only; hidden otherwise. -->
+  <section id="user-administration" hidden>
+    <h2>User administration</h2>
+    <button type="button" data-action="delete-user">Delete user</button>
+  </section>
+
+  <script>
+  (function () {
+    "use strict";
+
+    // Account owner: exactly one per workspace; can save the tenant profile and
+    // administer users. A manager is never treated as the account owner and
+    // cannot save the profile; it may administer users only when the owner has
+    // explicitly delegated that permission. A plain member can do neither.
+    function canSaveTenantProfile(session) {
+      return !!session && session.role === "owner";
+    }
+
+    function canAdministerUsers(session) {
+      if (!session) return false;
+      if (session.role === "owner") return true;
+      return session.role === "manager" && session.delegatedAdministration === true;
+    }
+
+    // Tenant-scoped data layer. Every record is bound to exactly one workspace,
+    // and every read carries the workspace scope from the authenticated session.
+    // A missing scope fails closed.
+    var store = {
+      records: {
+        alpha: { "display-name": "Alpha account" },
+        beta: { "display-name": "Beta account", "billing-email": "billing@example.test" }
+      },
+      profiles: {}
+    };
+
+    function readRecord(session, id) {
+      if (!session || !session.tenant) return null;
+      var scoped = store.records[session.tenant];
+      if (!scoped) return null;
+      return Object.prototype.hasOwnProperty.call(scoped, id) ? scoped[id] : null;
+    }
+
+    function saveProfile(session, value) {
+      if (!canSaveTenantProfile(session)) return false;
+      store.profiles[session.tenant] = value;
+      return true;
+    }
+
+    function readProfile(session) {
+      if (!session || !session.tenant) return null;
+      return Object.prototype.hasOwnProperty.call(store.profiles, session.tenant)
+        ? store.profiles[session.tenant]
+        : null;
+    }
+
+    // A session is bound to exactly one workspace.
+    var session = { tenant: "alpha", role: "owner" };
+
+    var form = document.getElementById("profile-form");
+    var input = document.getElementById("display-name");
+    var result = document.getElementById("result");
+    var admin = document.getElementById("user-administration");
+
+    // Render only what the current session is authorized to see.
+    admin.hidden = !canAdministerUsers(session);
+
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+      if (!canSaveTenantProfile(session)) {
+        result.textContent = "Not authorized: only the account owner can save the tenant profile.";
+        return;
+      }
+      saveProfile(session, input.value);
+      result.textContent = "Tenant profile saved.";
+    });
+
+    // Exposed for tests and QA inspection.
+    window.fieldnotes = {
+      session: session,
+      canSaveTenantProfile: canSaveTenantProfile,
+      canAdministerUsers: canAdministerUsers,
+      readRecord: readRecord,
+      saveProfile: saveProfile,
+      readProfile: readProfile,
+      setSession: function (next) {
+        session = next;
+        window.fieldnotes.session = next;
+        admin.hidden = !canAdministerUsers(session);
+      }
+    };
+  })();
+  </script>
 </body></html>
