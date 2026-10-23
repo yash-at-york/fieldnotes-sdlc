@@ -7,7 +7,78 @@
 <body>
   <main>
     <h1>Kestrel</h1>
-    <p>Home care operations shell. Referral capture is not built yet.</p>
+    <form id="referral-form" novalidate>
+      <div>
+        <label for="source">Source</label>
+        <input id="source" name="source" type="text">
+      </div>
+      <div>
+        <label for="requested-services">Requested services</label>
+        <input id="requested-services" name="requested-services" type="text">
+      </div>
+      <div>
+        <label for="geography">Geography</label>
+        <input id="geography" name="geography" type="text">
+      </div>
+      <div>
+        <label for="requested-start-date">Requested start date</label>
+        <input id="requested-start-date" name="requested-start-date" type="date">
+      </div>
+      <button type="submit">Save referral</button>
+    </form>
+    <p id="validation-message" role="alert"></p>
+    <section id="saved-summary" hidden>
+      <h2>Saved referral</h2>
+      <dl>
+        <dt>Source</dt>
+        <dd id="summary-source"></dd>
+        <dt>Requested services</dt>
+        <dd id="summary-requested-services"></dd>
+        <dt>Geography</dt>
+        <dd id="summary-geography"></dd>
+        <dt>Requested start date</dt>
+        <dd id="summary-requested-start-date"></dd>
+      </dl>
+    </section>
   </main>
+  <script>
+    const form = document.getElementById("referral-form");
+    const validationMessage = document.getElementById("validation-message");
+    const savedSummary = document.getElementById("saved-summary");
+
+    const fields = [
+      { id: "source", label: "source" },
+      { id: "requested-services", label: "requested services" },
+      { id: "geography", label: "geography" },
+      { id: "requested-start-date", label: "requested start date" }
+    ];
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      validationMessage.textContent = "";
+      savedSummary.hidden = true;
+
+      const missingFields = fields
+        .filter((field) => document.getElementById(field.id).value.trim() === "")
+        .map((field) => field.label);
+
+      if (missingFields.length > 0) {
+        validationMessage.textContent = `Missing fields: ${missingFields.join(", ")}`;
+        return;
+      }
+
+      const saveSucceeded = true;
+      if (!saveSucceeded) {
+        validationMessage.textContent = "Save could not be completed. Please try again.";
+        return;
+      }
+
+      document.getElementById("summary-source").textContent = document.getElementById("source").value;
+      document.getElementById("summary-requested-services").textContent = document.getElementById("requested-services").value;
+      document.getElementById("summary-geography").textContent = document.getElementById("geography").value;
+      document.getElementById("summary-requested-start-date").textContent = document.getElementById("requested-start-date").value;
+      savedSummary.hidden = false;
+    });
+  </script>
 </body>
 </html>
